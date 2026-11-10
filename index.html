@@ -102,7 +102,9 @@ h3{font-size:16px;margin:0 0 6px}
 .pin i{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #fff;margin-top:-1px}
 .pin.me b{background:#b4842f}
 .pin:hover b,.pin.lit b{transform:scale(1.12);background:#c4583f}
-.layer-off-n .hot{display:none}.lords-off .pin{display:none}
+.layer-off-n .hot,.layer-off-n .ban{display:none}
+.ban{position:absolute;cursor:pointer;opacity:0;-webkit-user-drag:none;user-select:none;transition:opacity .22s ease,filter .22s ease;filter:drop-shadow(0 0 1.5px rgba(255,248,225,1)) drop-shadow(0 0 7px rgba(255,222,150,.75)) drop-shadow(0 3px 5px rgba(50,25,0,.4)) brightness(1.08)}
+.ban:hover,.ban.lit{opacity:1}.lords-off .pin{display:none}
 .rb{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:rgba(28,30,38,.78);color:#f3ead6;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:0;transition:background .15s,transform .15s}
 .rb:hover{background:rgba(52,54,66,.9)}.rb.on{background:#e9d6a4;color:#2b2214}
 .rb svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -731,12 +733,15 @@ mv.addEventListener("pointerout", e => { if (e.target.closest("[data-e]")) tip.c
 
 /* 标记与图例 */
 const ENT = {};
+/* 地图上国名飘带的位置（百分比，对应 dagda-map.jpg） */
+const BAN = { arago: { l: 31.566, t: 27.81, w: 13.956 }, empire: { l: 53.132, t: 43.057, w: 13.956 }, brezarant: { l: 8.571, t: 62.466, w: 16.621 }, saramis: { l: 24.973, t: 82.536, w: 16.566 }, mosa: { l: 67.005, t: 93.388, w: 13.929 } };
 function renderHots(){
   for (const k in ENT) delete ENT[k];
   const NV = DATA.nations.map(vw).filter(n => !n.locked), LV = DATA.lords.map(vw);
   NV.forEach(n => ENT[n.id] = { ...n, kind: "n" }); LV.forEach(l => ENT[l.id] = { ...l, kind: "l" });
   $("#hots").innerHTML = NV.filter(n => n.map).map(n => n.map.dot
       ? `<div class="hot dot" data-e="${n.id}" style="left:${n.map.x}%;top:${n.map.y}%"></div>`
+      : BAN[n.id] ? `<img class="ban" data-e="${n.id}" src="ban-${n.id === "brezarant" ? "brez" : n.id === "saramis" ? "sara" : n.id}.png" alt="" draggable="false" style="left:${BAN[n.id].l}%;top:${BAN[n.id].t}%;width:${BAN[n.id].w}%">`
       : `<div class="hot" data-e="${n.id}" style="left:${n.map.x}%;top:${n.map.y}%;width:${n.map.w}%;height:3.6%"></div>`).join("")
     + LV.filter(l => l.map).map(l => `<div class="pin ${l.me ? "me" : ""}" data-e="${l.id}" style="left:${l.map.x}%;top:${l.map.y}%"><b>${esc(l.name)}</b><i></i></div>`).join("");
   $("#tray").innerHTML = [...LV, ...NV].filter(x => !x.map).map(x => `<button data-jump="${x.id}"><span>${esc(x.name)}</span><small>${esc(x.offmap || x.pos)}</small></button>`).join("");
